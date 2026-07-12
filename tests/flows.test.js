@@ -88,6 +88,23 @@ test('order tracking: one-shot "where is order 222" answers directly', () => {
   assert.match(allText(r), /24 hours/i);
 });
 
+test('order tracking: "order NNN" phrasing without a tracking verb still works', () => {
+  let s = flows.createSession();
+  let r = flows.respond(s, 'where is order 333');
+  assert.match(allText(r), /delivered/i);
+  assert.equal(r.state, 'ORDER_FOLLOWUP');
+
+  // a bare number typed at the main menu is treated as an order number
+  s = flows.createSession();
+  r = flows.respond(s, '111');
+  assert.match(allText(r), /shipped/i);
+
+  // but a number buried in unrelated text is not
+  s = flows.createSession();
+  r = flows.respond(s, 'i have 2 dogs');
+  assert.match(allText(r), /didn't quite catch/i);
+});
+
 test('returns: full policy + returns link, then back to main flow', () => {
   const s = flows.createSession();
   const r = flows.respond(s, "what's your return policy?");
