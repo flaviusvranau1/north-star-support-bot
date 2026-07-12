@@ -319,3 +319,19 @@ body {
     border-radius: 0;
   }
 }
+
+/* ---------- accessibility ---------- */
+
+.chip:focus-visible,
+.send:focus-visible,
+.restart:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg, .chip { animation: none; }
+  .typing .t-dot { animation: none; opacity: 0.6; }
+  .messages { scroll-behavior: auto; }
+  .send:hover, .chip:hover { transform: none; }
+}

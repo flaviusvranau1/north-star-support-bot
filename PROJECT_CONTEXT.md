@@ -49,6 +49,23 @@ rule-based (no LLM, no backend).
 
 ## 4. Step Journal (newest first)
 
+- **2026-07-13 — Hardening pass (adversarial QA).** Independent QA agent
+  wrote `tests/adversarial.test.js` (52 tests: hostile paraphrases, state
+  hijacking, mock-data edges, input hygiene, live-agent stress, chip
+  crawler). 5 failures found and fixed: (1) "send my boots back" → gap-
+  tolerant `send/mail/ship … back` regexes (intent engine now accepts RegExp
+  phrases); (2) "cancel" now escapes AWAITING_ORDER_NUMBER (weight 2→3), and
+  "cancel … order" routes to the live agent; (3) empty input gets a state-
+  aware reprompt instead of a state-mismatched global fallback; (4) "no
+  problems!" idioms neutralized before the yes/issue check so they hit the
+  happy path; (5) leaving the live agent now requires an explicit exit
+  phrase (bare "back"/"menu"/"bye" work; "I head back home friday" doesn't
+  eject). Also: recommendation slot memory ("help me pick a tent" won't
+  re-ask apparel-vs-gear — with a guard so the "gear recommendations" chip
+  doesn't pre-fill "gear"), contact/phone → handoff, OG meta tags,
+  focus-visible rings, prefers-reduced-motion, mobile 375px verified.
+  81/81 tests green; both headline fixes re-verified in the real UI.
+
 - **2026-07-13 — Phases 3–4: docs, GitHub, video.** Evaluator README with
   requirements map + 60-second test drive. Public repo
   `flaviusvranau1/north-star-support-bot`, GitHub Pages enabled (main /).
@@ -79,7 +96,7 @@ rule-based (no LLM, no backend).
 
 ## 5. Current Status
 
-- **Done:** Phases 0–4 — engine, UI, docs, public repo + Pages, 2:13 video.
+- **Done:** Phases 0–4 + adversarial hardening pass (81/81 tests).
 - **Next:** Phase 5 — Upwork submission (Flavius reviews video, submits).
 
 ## 6. Known Issues & TODO

@@ -83,9 +83,18 @@ Design notes:
 node --test        # Node ≥ 18, no dependencies
 ```
 
-29 tests: intent recognition across phrasing variations (5–8 per intent),
-conflict resolution between overlapping intents, order-number extraction,
-the exact mock-order behaviors, fallback strikes, handoff and return-to-menu.
+**81 tests in three suites:**
+
+- `tests/intents.test.js` — intent recognition across phrasing variations,
+  conflict resolution between overlapping intents, order-number extraction.
+- `tests/flows.test.js` — the exact mock-order behaviors, fallback strikes,
+  handoff and return-to-menu.
+- `tests/adversarial.test.js` — an independently-written adversarial suite:
+  hostile paraphrases, mixed/negated intents, state hijacking, mock-data
+  edge cases ("0111" must be invalid), input hygiene (emoji-only, HTML,
+  500-char gibberish, curly quotes), live-agent stress, and a **state-machine
+  crawler** that presses every quick-reply chip in every reachable state and
+  asserts none of them ever hits the fallback.
 
 ## Video demo
 
