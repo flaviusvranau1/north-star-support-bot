@@ -33,6 +33,8 @@ const NSIntents = (() => {
   }
 
   // Order = tie-break priority (earlier wins on equal score).
+  // A phrase may be a plain string (word-boundary matched) or a RegExp for
+  // gap-tolerant patterns like "send ... back".
   const INTENTS = [
     {
       id: 'human_handoff',
@@ -41,7 +43,11 @@ const NSIntents = (() => {
         ['representative', 3], ['operator', 3], ['speak to someone', 4],
         ['talk to someone', 4], ['speak with someone', 4],
         ['talk to a person', 4], ['customer service', 2], ['real human', 4],
-        ['speak to a person', 4], ['person', 2],
+        ['speak to a person', 4], ['person', 2], ['contact', 2],
+        ['phone number', 3], ['call you', 3], ['email you', 3],
+        ['reach you', 3],
+        // order cancellation isn't a bot capability — route to a human
+        [/\bcancel\b.*\border\b/, 5],
       ],
     },
     {
@@ -61,9 +67,10 @@ const NSIntents = (() => {
       phrases: [
         ['return', 3], ['returns', 3], ['returning', 3], ['refund', 3],
         ['refunds', 3], ['refunded', 3], ['exchange', 3],
-        ['exchanges', 3], ['send back', 3], ['send it back', 4],
-        ['send this back', 4], ['send them back', 4], ['mail it back', 4],
-        ['ship it back', 4],
+        ['exchanges', 3],
+        // gap-tolerant: "send my boots back", "mail the tent back", …
+        [/\bsend\b.*\bback\b/, 4], [/\bmail\b.*\bback\b/, 4],
+        [/\bship\b.*\bback\b/, 4],
         ['money back', 3], ['return policy', 4], ['swap', 2],
         ['take back', 2], ['give back', 2], ['wrong item', 3],
         ['wrong size', 3], ['too small', 2], ['too big', 2],
@@ -100,7 +107,7 @@ const NSIntents = (() => {
       id: 'menu',
       phrases: [
         ['menu', 3], ['main menu', 4], ['start over', 3], ['go back', 2],
-        ['back', 2], ['home', 2], ['cancel', 2], ['never mind', 3],
+        ['back', 2], ['home', 2], ['cancel', 3], ['never mind', 3],
         ['nevermind', 3], ['restart', 3], ['options', 2], ['help', 2],
       ],
     },
@@ -134,7 +141,7 @@ const NSIntents = (() => {
   const COMPILED = INTENTS.map((intent) => ({
     id: intent.id,
     phrases: intent.phrases.map(([phrase, weight]) => ({
-      re: phraseRegex(phrase),
+      re: phrase instanceof RegExp ? phrase : phraseRegex(phrase),
       weight,
     })),
   }));
@@ -170,17 +177,25 @@ const NSIntents = (() => {
   }
 
   const YES_RE =
-    /\b(yes|yeah|yep|yup|sure|all good|looks good|great|perfect|fine|ok|okay|everything is fine|no problems?|good shape)\b/;
+    /\b(yes|yeah|yep|yup|sure|good|great|perfect|fine|ok|okay|intact|good shape)\b/;
   const ISSUE_RE =
     /\b(no|nope|issue|issues|problem|problems|damaged|damage|missing|broken|wrong|bad|crushed|torn|defective|scratched|ripped|not)\b/;
 
+  // "no problems", "nothing wrong" etc. are POSITIVE idioms — rewrite them
+  // before the issue check so ISSUE_RE's bare "no"/"wrong" can't veto them.
+  function neutralizePositiveIdioms(input) {
+    return input
+      .replace(/\bno (problems?|issues?|complaints?|worries|damage)\b/g, 'all good')
+      .replace(/\bnothing (wrong|missing|broken|damaged|bad)\b/g, 'all good');
+  }
+
   function isYes(text) {
-    const input = normalize(text);
+    const input = neutralizePositiveIdioms(normalize(text));
     return YES_RE.test(input) && !ISSUE_RE.test(input);
   }
 
   function hasIssue(text) {
-    return ISSUE_RE.test(normalize(text));
+    return ISSUE_RE.test(neutralizePositiveIdioms(normalize(text)));
   }
 
   const ACTIVITY_RES = {

@@ -58,9 +58,52 @@ const NSFlows = (() => {
       state: 'MAIN_MENU',
       strikes: 0, // consecutive not-understood inputs (2-strike fallback)
       orderTries: 0, // consecutive invalid order numbers
-      activity: null, // recommendation slot
+      activity: null, // recommendation slot: adventure type
+      recoType: null, // recommendation slot: apparel/gear, if mentioned early
       agentReplyIdx: 0,
     };
+  }
+
+  /** Gentle, state-aware nudge for empty input — no fallback strikes. */
+  function repromptForState(session) {
+    switch (session.state) {
+      case 'AWAITING_ORDER_NUMBER':
+        return {
+          messages: [bot("What's your order number? (It looks like #111.)")],
+          quickReplies: [BACK_CHIP],
+          state: session.state,
+        };
+      case 'ORDER_FOLLOWUP':
+        return {
+          messages: [bot('Just checking — did everything arrive okay?')],
+          quickReplies: FOLLOWUP_CHIPS.slice(),
+          state: session.state,
+        };
+      case 'RECO_ACTIVITY':
+        return {
+          messages: [bot('What kind of adventure are you gearing up for?')],
+          quickReplies: ACTIVITY_CHIPS.slice(),
+          state: session.state,
+        };
+      case 'RECO_TYPE':
+        return {
+          messages: [bot('Apparel (things you wear) or gear (things you pack)?')],
+          quickReplies: TYPE_CHIPS.slice(),
+          state: session.state,
+        };
+      case 'LIVE_AGENT':
+        return {
+          messages: [
+            agent(
+              "Still there? No rush — I'm right here when you're ready. (Simulated agent for this demo.)"
+            ),
+          ],
+          quickReplies: [BACK_CHIP],
+          state: session.state,
+        };
+      default:
+        return mainMenu(session);
+    }
   }
 
   /** Opening messages shown when the chat loads. */
@@ -294,10 +337,18 @@ const NSFlows = (() => {
   function startRecommendations(session, text) {
     session.strikes = 0;
     const activity = intents.matchActivity(text);
-    const type = intents.matchType(text);
+    // "gear" inside the trigger phrase "gear recommendations" is not an
+    // answer to the apparel-vs-gear question — strip it before slot-filling.
+    const slotText = intents
+      .normalize(text)
+      .replace(/\bgear recommendations?\b/g, ' ');
+    const type = intents.matchType(slotText);
 
     if (activity && type) return giveRecommendation(session, activity, type);
     if (activity) return askType(session, activity);
+    // remember an early type mention ("help me pick a tent") so we don't
+    // ask a question the user already answered
+    if (type) session.recoType = type;
 
     session.state = 'RECO_ACTIVITY';
     return {
@@ -336,6 +387,7 @@ const NSFlows = (() => {
   function giveRecommendation(session, activity, type) {
     const reco = data.recommendations[activity][type];
     session.activity = null;
+    session.recoType = null;
     return anythingElse(session, [bot(reco.pitch)]);
   }
 
@@ -343,7 +395,7 @@ const NSFlows = (() => {
     const activity = intents.matchActivity(text);
     if (activity) {
       session.strikes = 0;
-      const type = intents.matchType(text);
+      const type = intents.matchType(text) || session.recoType;
       if (type) return giveRecommendation(session, activity, type);
       return askType(session, activity);
     }
@@ -400,9 +452,13 @@ const NSFlows = (() => {
     };
   }
 
+  // Leaving the agent requires an EXPLICIT exit phrase — casual small talk
+  // containing "back" or "home" must not eject the user mid-conversation.
+  const AGENT_EXIT_RE =
+    /\b(main menu|menu|back to (the )?(bot|menu|start)|start over|go back|exit|leave|goodbye|bye|that is all|thats all|i am done)\b|^back$/;
+
   function handleLiveAgent(session, text) {
-    const intent = intents.detectIntent(text);
-    if (intent && (intent.id === 'menu' || intent.id === 'goodbye')) {
+    if (AGENT_EXIT_RE.test(intents.normalize(text))) {
       session.state = 'MAIN_MENU';
       return {
         messages: [
@@ -483,7 +539,7 @@ const NSFlows = (() => {
   /** Main entry point: route the user's input based on conversation state. */
   function respond(session, rawText) {
     const text = String(rawText || '').trim();
-    if (!text) return notUnderstood(session);
+    if (!text) return repromptForState(session);
 
     switch (session.state) {
       case 'AWAITING_ORDER_NUMBER':
