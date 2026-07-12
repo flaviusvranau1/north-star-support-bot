@@ -49,6 +49,17 @@ rule-based (no LLM, no backend).
 
 ## 4. Step Journal (newest first)
 
+- **2026-07-13 — Phase 2: chat UI + browser E2E.** index.html/styles.css/
+  app.js: bubbles, avatars (bot ★ pine / agent A amber), typing indicator
+  with length-scaled delay, quick-reply chips (buttons + link chips), header
+  status that flips to "Live Agent — Alex · simulated", restart button,
+  demo hint bar, mobile breakpoint. `demo/serve.js` (zero-dep static server,
+  port 5250) for previewing/recording. Bugs found & fixed during real
+  browser testing: (1) Enter while the bot was "typing" swallowed the
+  user's draft — submit now keeps the draft when busy; (2) "where is order
+  333" (no "my") fell to fallback — added number+order-word rule in
+  handleMainMenu. E2E verified in browser: all 4 use cases, shipping info,
+  2-strike fallback, escalation, handoff and return to menu. 29/29 tests.
 - **2026-07-12 — Phase 0: foundation.** git init, scaffold, `data.js`
   (orders #111/#222/#333 exactly per brief, return policy, shipping times,
   recommendation matrix), `intents.js` (9 intents, weighted phrases,
@@ -58,13 +69,11 @@ rule-based (no LLM, no backend).
 
 ## 5. Current Status
 
-- **Done:** Phase 0 — data + intent engine + tests green.
-- **Next:** Phase 1 — `flows.js` state machine (branch `feat/flows`).
+- **Done:** Phases 0–2 — engine + UI, browser-verified end to end.
+- **Next:** Phase 3 — README + GitHub repo + Pages (branch `feat/qa-docs`).
 
 ## 6. Known Issues & TODO
 
-- [ ] Phase 1: conversation state machine + flow tests
-- [ ] Phase 2: chat UI
 - [ ] Phase 3: QA vs. brief checklist §7.d, README, GitHub Pages
 - [ ] Phase 4: demo video (Playwright recording + manual script)
 - [ ] Phase 5: Upwork submission pack

@@ -428,7 +428,21 @@ const NSFlows = (() => {
 
   function handleMainMenu(session, text) {
     const intent = intents.detectIntent(text);
-    if (!intent) return notUnderstood(session);
+    if (!intent) {
+      // "order 333", "#222" or a bare number is clearly a tracking request
+      // even without a tracking verb.
+      const number = intents.extractOrderNumber(text);
+      if (number) {
+        const n = intents.normalize(text);
+        if (
+          /^#?\s*\d+$/.test(n) ||
+          /\b(order|orders|package|parcel|shipment)\b/.test(n)
+        ) {
+          return orderStatus(session, number);
+        }
+      }
+      return notUnderstood(session);
+    }
     session.strikes = 0;
 
     switch (intent.id) {
