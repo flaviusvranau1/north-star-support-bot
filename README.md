@@ -87,6 +87,12 @@ node --test        # Node ≥ 18, no dependencies
 conflict resolution between overlapping intents, order-number extraction,
 the exact mock-order behaviors, fallback strikes, handoff and return-to-menu.
 
+## Video demo
+
+**▶ [demo/recordings/north-star-demo.mp4](demo/recordings/north-star-demo.mp4)**
+(2:13) — all four use cases + a fallback scenario, following
+[demo/VIDEO-SCRIPT.md](demo/VIDEO-SCRIPT.md).
+
 ## Project layout extras
 
 - `PROJECT_CONTEXT.md` — development journal (decisions, phases, verification)

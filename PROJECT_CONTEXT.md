@@ -49,6 +49,16 @@ rule-based (no LLM, no backend).
 
 ## 4. Step Journal (newest first)
 
+- **2026-07-13 — Phases 3–4: docs, GitHub, video.** Evaluator README with
+  requirements map + 60-second test drive. Public repo
+  `flaviusvranau1/north-star-support-bot`, GitHub Pages enabled (main /).
+  Demo video auto-recorded with playwright-core (system Chrome, headless,
+  1280×720) driving the real UI over `demo/serve.js`; presenter captions
+  injected beside the card; ffmpeg webm→mp4. First cut was 1:37 — retuned
+  pacing + added shipping-info segment → 2:13 (brief wants 2–3 min). Video
+  committed at demo/recordings/north-star-demo.mp4 and linked in README.
+  `demo/VIDEO-SCRIPT.md` mirrors it for a manual voice-over re-record.
+
 - **2026-07-13 — Phase 2: chat UI + browser E2E.** index.html/styles.css/
   app.js: bubbles, avatars (bot ★ pine / agent A amber), typing indicator
   with length-scaled delay, quick-reply chips (buttons + link chips), header
@@ -69,14 +79,14 @@ rule-based (no LLM, no backend).
 
 ## 5. Current Status
 
-- **Done:** Phases 0–2 — engine + UI, browser-verified end to end.
-- **Next:** Phase 3 — README + GitHub repo + Pages (branch `feat/qa-docs`).
+- **Done:** Phases 0–4 — engine, UI, docs, public repo + Pages, 2:13 video.
+- **Next:** Phase 5 — Upwork submission (Flavius reviews video, submits).
 
 ## 6. Known Issues & TODO
 
-- [ ] Phase 3: QA vs. brief checklist §7.d, README, GitHub Pages
-- [ ] Phase 4: demo video (Playwright recording + manual script)
-- [ ] Phase 5: Upwork submission pack
+- [ ] Phase 5: Flavius reviews the video (optionally re-records with voice
+      per demo/VIDEO-SCRIPT.md) and submits on Upwork
+- [ ] Verify GitHub Pages URL renders after first build
 
 ## 7. How to Run
 

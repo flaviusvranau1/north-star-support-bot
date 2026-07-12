@@ -1,7 +1,7 @@
 node_modules/
-demo/recordings/
+demo/recordings/*
+!demo/recordings/north-star-demo.mp4
 *.webm
-*.mp4
 .env
 .env.*
 !.env.example
