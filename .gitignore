@@ -1,0 +1,10 @@
+node_modules/
+demo/recordings/
+*.webm
+*.mp4
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db

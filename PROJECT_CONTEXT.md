@@ -1,0 +1,90 @@
+# PROJECT_CONTEXT — North Star Support Bot
+
+> Living development journal. Read this file first when picking up the
+> project. Updating it is part of the definition of done for every task.
+
+## 1. Project Overview
+
+Customer support chatbot for **North Star Outfitters**, a (simulated) small
+e-commerce business selling outdoor apparel and camping gear. Built as a
+deliverable for the **Upwork Talent Accelerator** program (contract accepted
+2026-07-12, submission SLA 24–48h).
+
+Required use cases: order tracking (mock data), returns & exchanges,
+product recommendations (1–2 clarifying questions), human handoff with a
+simulated Live Agent state, plus intent recognition across phrasing
+variations and a 2-strike fallback.
+
+Hard constraint from the brief: evaluators must be able to test **without
+API keys, accounts or setup steps** → the bot is fully client-side and
+rule-based (no LLM, no backend).
+
+## 2. Stack & Architecture
+
+- Vanilla HTML/CSS/JS, **zero runtime dependencies, no build step** — works
+  from `file://` or any static host (GitHub Pages).
+- Classic scripts (not ES modules) so double-clicking `index.html` works;
+  each `js/*.js` file also exports via CommonJS for Node's test runner.
+- Layers:
+  - `js/data.js` — all copy, mock orders, policies, recommendation matrix.
+  - `js/intents.js` — pure intent engine: normalize → weighted word-boundary
+    phrase scoring → best intent (threshold 2, priority tie-break).
+  - `js/flows.js` — conversation state machine (no DOM).
+  - `js/app.js` — DOM rendering: bubbles, quick replies, typing indicator.
+- Tests: `node --test` (Node 22), no test framework dependency.
+- Demo video: `demo/record-demo.js` (playwright-core, devDependency only).
+
+## 3. Decisions & Rationale
+
+- **2026-07-12 — Rule-based, client-side only.** An LLM bot would require an
+  API key, which the brief explicitly disqualifies (§7.a.i). Deterministic
+  keyword scoring is fully testable and reviewable.
+- **2026-07-12 — Classic scripts over ES modules.** ES modules fail on
+  `file://` (CORS); evaluators may just double-click index.html. The
+  `module.exports` guard at the bottom of each file keeps Node tests happy.
+- **2026-07-12 — Quick replies AND free text everywhere.** Chips make flows
+  guided (evaluation criterion 6.b); free text proves intent recognition
+  (criterion 6.d). Chip values are natural phrases routed through the same
+  intent engine as typed input — one code path.
+
+## 4. Step Journal (newest first)
+
+- **2026-07-12 — Phase 0: foundation.** git init, scaffold, `data.js`
+  (orders #111/#222/#333 exactly per brief, return policy, shipping times,
+  recommendation matrix), `intents.js` (9 intents, weighted phrases,
+  yes/issue + activity/type slot matchers), 12 unit tests — all passing.
+  Fixed during testing: plural coverage (refunds/rains), "send THIS back"
+  phrasing beating the menu intent's "back".
+
+## 5. Current Status
+
+- **Done:** Phase 0 — data + intent engine + tests green.
+- **Next:** Phase 1 — `flows.js` state machine (branch `feat/flows`).
+
+## 6. Known Issues & TODO
+
+- [ ] Phase 1: conversation state machine + flow tests
+- [ ] Phase 2: chat UI
+- [ ] Phase 3: QA vs. brief checklist §7.d, README, GitHub Pages
+- [ ] Phase 4: demo video (Playwright recording + manual script)
+- [ ] Phase 5: Upwork submission pack
+
+## 7. How to Run
+
+- Open `index.html` in any browser (no server needed), or serve statically.
+- Tests: `node --test` from the repo root (Node ≥ 18).
+
+## 8. Conventions
+
+- Conventional Commits, English. Feature branches → merge `--no-ff` to main.
+- All bot copy lives in `data.js` — never hardcode strings in the engine.
+- Intent phrases are lowercase, matched after `normalize()` — when adding
+  phrases, add a test with a natural-language variation.
+
+## 9. Instructions for the Next AI / Developer
+
+- The mock order logic (§3.c of the brief) is sacred: 111 → shipped/
+  arriving tomorrow, 222 → processing/ships in 24h, 333 → delivered +
+  follow-up, anything else → invalid. Don't "improve" it.
+- Keep the zero-dependency constraint: nothing in `index.html` may fetch
+  external resources (fonts, CDNs) — evaluators may be offline.
